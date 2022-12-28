@@ -109,8 +109,6 @@ print("RPY In Degrees: ", np.degrees( move_group.get_current_rpy() ) )
 print("")
 
 
-
-
 def go_to_coord_goal(move_group,xyz,RPY):
     quat = Rotation.from_euler('xyz', RPY, degrees=True).as_quat() #create a rotation object for converting to quaternion from rotation.
 
@@ -148,10 +146,6 @@ def go_to_coord_goal(move_group,xyz,RPY):
     current_pose = move_group.get_current_pose().pose
     return all_close(pose_goal, current_pose, 0.01)
 
-
-def obj_pose(object_name, scene): #Get the poses from the objects identified by the given object ids list.
-    pos = scene.get_object_poses([object_name])   #This parameter expects a "list" of object IDs
-    return pos
 
 def get_circle_coordinate(cx,cz,cy, r,theta): #generate x,z coordinates around a circle of radius r
 
