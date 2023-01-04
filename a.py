@@ -108,7 +108,6 @@ print(move_group.get_current_rpy())
 print("RPY In Degrees: ", np.degrees( move_group.get_current_rpy() ) )
 print("")
 
-
 def go_to_coord_goal(move_group,xyz,RPY):
     quat = Rotation.from_euler('xyz', RPY, degrees=True).as_quat() #create a rotation object for converting to quaternion from rotation.
 
@@ -149,17 +148,23 @@ def go_to_coord_goal(move_group,xyz,RPY):
 
 def get_circle_coordinate(cx,cz,cy, r,theta): #generate x,z coordinates around a circle of radius r
 
-    X = cx + ( r * np.cos( np.radians(180-theta) ) ) #subtract from 180 to make it clockwise coordinate generation, else, it'll start from 180 at 0 degree
+    X = cx 
     Z = cz + ( r * np.sin( np.radians(180-theta) ) )
-    Y = cy
+    Y = cy + ( r * np.cos( np.radians(180-theta) ) ) #subtract from 180 to make it clockwise coordinate generation, else, it'll start from 180 at 0 degree
 
     return X,Y,Z
 
 def get_circle_RPY(theta):  #Generate RPY values based on the angle (in degrees)
 
-    Roll = -2.8252*((10**-6)*theta**4) + 0.000411511*(theta**3) - 0.0246093*(theta**2) + 1.654203*(theta) + 98.10103
-    Pitch = -2.75083*((10**-7)*theta**4) - 4.56628*((10**-5)*theta**3) + 0.0107702*(theta**2) + 0.0511628*(theta) - 44.46201
-    Yaw = 1.70203*((10**-6)*theta**4) - 0.000273718*(theta**3) + 0.0210548*(theta**2) - 1.24792*(theta) + 83.988
+#    Roll = -2.8252*((10**-6)*theta**4) + 0.000411511*(theta**3) - 0.0246093*(theta**2) + 1.654203*(theta) + 98.10103
+#    Pitch = -2.75083*((10**-7)*theta**4) - 4.56628*((10**-5)*theta**3) + 0.0107702*(theta**2) + 0.0511628*(theta) - 44.46201
+#    Yaw = 1.70203*((10**-6)*theta**4) - 0.000273718*(theta**3) + 0.0210548*(theta**2) - 1.24792*(theta) + 83.988
+
+    Roll = 1.0*((10**-6)*theta**4) - 4.0*((10**-5)*theta**3) + 0.00016*(theta**2) - 1.2607*(theta) - 89.317
+    Pitch = -6.0*((10**-6)*theta**4) + 0.0006*(theta**3) - 0.0138*(theta**2) + 0.2704*(theta) - 45.52
+    Yaw = 7.0*((10**-6)*theta**4) - 0.0008*(theta**3) + 0.0215*(theta**2) + 0.6886*(theta) - 2.6452
+
+
 
     return Roll, Pitch, Yaw  #in degrees
 
@@ -193,41 +198,67 @@ print("----------------------------------------------------------")
 print("")
 
 
-minimum_eef_clearance = 0.363 # minimum required for EEF to function at current offsets
 #cx = 1.57#0.67          #X coordinate of roller
 #cz = 0.37          #Z coordinate of roller (in our case)
 #r = 1.0+0.15     #Radius of roller plus offset distance between roller and gripper in meters
 #arc_len = 0.01 #0.0268    #0.01     #in meters 10cm
-image_count = 28   #Number of images to cover (angles will be generated based on this number, first angle is set to 0 by default)
+
+
+image_count = 18   #Number of images to cover (angles will be generated based on this number, first angle is set to 0 by default)
 start_angle = 0.0  #Starting angle from where the coordinates are to be generated, subsequent angles are offsets over this one.
 
-cx = 0.80
-cz = 0.37
-cy = 0
+cx = 0.53  #This coordinate will align camera with center of roller towards x axis
+cy = 0    #Center should be 0 this is center of roller not origin!
+cz = 0.15  #center point of roller z axis
 
-r = 0.10+0.25#0.157+0.15
+r = 0.25+0.1 
 
-arc_len =  2.5 * r * pi/180  #angle to arc conversion
+arc_len =  5 * r * pi/180  #angle to arc conversion  5 is the min. resolution
 
 
 
 xyz, RPY, angles = waypoints_generator(cx, cz, cy, r, arc_len, image_count,start_angle)
 
-#status = go_to_coord_goal(move_group, xyz[0], RPY[0]) #pass values to function to make robot move in cartesian space. 
+
+RPYaa = [[-89.21027554, -45.38998279,  -2.68082286],
+[-95.89022663, -44.73985832,   1.46774324],
+[-101.64630634,  -43.75070326,    5.36288061],
+[-107.63651691,  -42.14177845,    9.98212906],
+[-114.30866964,  -41.98850504,   15.59125228],
+[-119.77468841,  -40.45197172,   18.17144948],
+[-125.77533899,  -38.18503703,   21.99774174],
+[-131.12649338,  -35.8822194,    25.13812194],
+[-136.07617445,  -33.24200689,   28.00204487],
+[-140.83329806,  -30.78375497,   30.08414349],
+[-146.29798798,  -30.02627153,   34.44567338],
+[-150.05714761,  -27.24579913,   36.12494538],
+[-155.1470135,   -23.51787386,   37.99821798],
+[-158.56502111,  -21.09311883,   38.91196127],
+[-162.75008423,  -17.75040675,   40.07745853],
+[-166.20312096,  -14.35895553,   40.80403505],
+[-170.11339143,  -11.45076753,   42.39297587],
+[-174.27549739,   -7.39918013,   42.87445182],
+[-177.60339518,   -4.09702356,   43.00158061],
+[-179.98090132,   -0.46626466,   43.05897968]]
+
+
+#status = go_to_coord_goal(move_group, xyz[0], [-94.75521051, -44.31704279,   2.10730087]) #pass values to function to make robot move in cartesian space. 
 #print("Status:", status)
 #print("")
 
 for i in range (0,len(xyz)):
 
-    print("Coordinates at",angles[i],"degree: ", xyz[i], RPY[i] )
+    print("Coordinates at",angles[i],"degree: ", xyz[i], RPYaa[i])#RPY[i] )
 
-    status = go_to_coord_goal(move_group, xyz[i], RPY[i]) #pass values to function to make robot move in cartesian space. 
+    status = go_to_coord_goal(move_group, xyz[i], RPYaa[i]) #RPY[i]) #pass values to function to make robot move in cartesian space. 
+
     print("Status:", status)
     print("")
     print("RPY In Degrees: ", np.degrees( move_group.get_current_rpy() ) )
     print("")
-    #input("============ Press `Enter` to execute a movement")
-    time.sleep(2)
+    #print(move_group.get_current_pose())
+    input("============ Press `Enter` to execute a movement")
+    #time.sleep(2)
     #print("")
     #print("Updated RPY In Degrees: ", np.degrees( move_group.get_current_rpy() ) )
     #print("")
